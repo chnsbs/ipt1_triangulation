@@ -3,6 +3,7 @@
 
 from Tkinter import *
 from ttk import *
+import tkFileDialog
 import matplotlib
 
 matplotlib.use('TkAgg')
@@ -52,35 +53,59 @@ class Application(threading.Thread):
 
         note.pack()
 
-        # Create two frames
-        self.topframe = Frame(self.root)
-        self.topframe.pack()
-        self.bottomframe = Frame(self.root)
-        self.bottomframe.pack(side=BOTTOM)
-        self.bottomframe2 = Frame(self.root)
-        self.bottomframe2.pack(side=BOTTOM)
+
         self.menu = Menu(self.root)
         self.root.config(menu=self.menu)
 
-        # Create Widgets for the 'topframe'
-        # Button for taking Z Value
-        self.button_SAVE = Button(self.topframe, text='Save Z-Axis', command=self.saveZPos)
-        self.entry_Zpos = Entry(self.topframe)
-        self.label_Zpos = Label(self.topframe, text='Enter the position\n in Z-Axis')
-        # self.entry_FileName = Entry(self.topframe)
-        #self.label_FileName = Label(self.topframe)
+        ############################# Configure 'Data Setup' Tab #####################################
+        # Create two frames for the tab
+        self.tab1_topframe = Frame(tab1)
+        self.tab1_topframe.pack()
+        self.tab1_bottomframe = Frame(tab1)
+        self.tab1_bottomframe.pack(side=BOTTOM)
+        self.tab1_bottomframe2 = Frame(self.root)
+        self.tab1_bottomframe2.pack(side=BOTTOM)
 
+        # Add a text label which explains the functions of the tab
+        #explanation = """In this tab it is possible to collect image data for a new physical setup of the system.
+        #                [Capture] Button: Takes a capture of lines using camera. This data will be used for line detection, extracting line positions.
+        #                   """
+
+        #message1_tab1 = Message(tab1, justify=LEFT, text=explanation); message1_tab1.pack();
+
+        # Button for taking capture from the camere to process
+        self.button_Capture = Button(self.tab1_topframe, text='Capture', command=self.capture)
+
+        # Button for taking Z Value
+        self.button_SAVE = Button(self.tab1_topframe, text='Add', command=self.saveZPos)
+        self.entry_Zpos = Entry(self.tab1_topframe)
+        self.label_Zpos = Label(self.tab1_topframe, text='Enter the position in Z-Axis')
+        tab1_label_Save = Label(self.tab1_bottomframe2, text='If gathered data is ready for futher processes')
+        tab1_button_Save = Button(self.tab1_bottomframe2, text='Save Setup Data', command=self.file_save)
+
+        # Pack the widgets to make them visible to user
+        self.button_Capture.grid(row=0, column=0, ipadx=20, padx=10, pady=10)
+        self.entry_Zpos.grid(row=0, column=2, pady=5)
+        self.label_Zpos.grid(row=0, column=1)
+        self.button_SAVE.grid(row=0, column=3, ipadx=20, padx=10, pady=10)
+        tab1_button_Save.grid(row=1, column=2, ipadx=20, padx=10, pady=10)
+
+        ############################# Configure 'Data Preparation' Tab #####################################
+
+
+
+
+        '''
         # Buton for saving and reading datasets
         self.button_SaveDataSet = Button(self.topframe, text='Save Data Set', command=self.saveData)
         self.button_LoadDataSet = Button(self.topframe, text='Load Data Set', command=self.readData)
 
-        # Button for taking capture from the camere to process
-        self.button_Capture = Button(self.topframe, text='Capture', command=self.capture)
 
         # Button to interpolate fiven values
         self.button_Interpolate = Button(self.topframe, text='Interpolate', command=self.interpolateGeneralize)
         # Button to   3d plot
         self.button_3dPlot = Button(self.bottomframe2, text='Plot 3D', command=self.Visualize2)
+        '''
 
         # Create Menu items
         self.filemenu = Menu(self.menu, tearoff=0)
@@ -91,27 +116,14 @@ class Application(threading.Thread):
         self.filemenu.add_separator()
         self.filemenu.add_command(label='Exit', command=self.root.quit)
 
-
+        '''
         # Pack the widgets
-        self.button_SAVE.grid(row=0, column=3, ipadx=20, padx=10, pady=10)
+
         self.button_SaveDataSet.grid(row=1, column=1, ipadx=20, padx=10, pady=10)
         self.button_LoadDataSet.grid(row=1, column=2, ipadx=20, padx=10, pady=10)
-        self.button_Capture.grid(row=0, column=0, ipadx=20, padx=10, pady=10)
         self.button_Interpolate.grid(row=0, column=5, ipadx=20, padx=10, pady=10)
         self.button_3dPlot.grid(row=1, column=1, ipadx=20, padx=10, pady=10)
-        self.entry_Zpos.grid(row=0, column=2, pady=5)
-        self.label_Zpos.grid(row=0, column=1)
-        #self.entry_FileName(row=1, column=1)
-        #self.label_FileName(row=1, column=0)
-        # draw function
-        # self.f = Figure(figsize=(6,4), dpi=100)
-        # self.a = self.f.add_subplot(111)
-        # self.a.set_title('Line segmentation')
-        # self.a.set_xlabel('Pixel (X axis)')
-        # self.a.set_ylabel('Z Position')
-        # self.canvas = FigureCanvasTkAgg(self.f, master=self.bottomframe)
-        # self.canvas.get_tk_widget().pack(fill=BOTH)
-        # self.canvas.show()
+        '''
 
 
         self.initGraph()
@@ -122,10 +134,9 @@ class Application(threading.Thread):
         # self.final[2] --> CenterLineIndex for each Z-Value
         # self.final[3] --> Enumarated lines to the Center Line
         # self.final[4] --> Reallocation of lines for the interpolation
-
         self.final = [[], [], [], [], []]
-        self.captr = [[], [], [], [], []]
 
+        self.captr = [[], [], [], [], []]
         self.capture3d = False
         self.xPlot = []
         self.yPlot = []
@@ -136,14 +147,14 @@ class Application(threading.Thread):
         self.f = Figure(figsize=(6, 4), dpi=100)
         self.a = self.f.add_subplot(111)
         self.a.plot(np.arange(len(self.z_Pos)), self.z_Pos)
-        self.a.set_title('Line Positions')
+        self.a.set_title("Position of a certain point of the Center Line")
         self.a.grid(True)
         self.a.autoscale(True)
         self.a.set_xlabel('X axis')
         self.a.set_ylabel('Z axis')
-        self.a.axis((0, 100, 0, 100))
-        self.canvas = FigureCanvasTkAgg(self.f, master=self.bottomframe)
-        toolbar = NavigationToolbar2TkAgg(self.canvas, self.bottomframe)
+        self.a.axis((0, 1500, 0, 1000))
+        self.canvas = FigureCanvasTkAgg(self.f, master=self.tab1_bottomframe)
+        toolbar = NavigationToolbar2TkAgg(self.canvas, self.tab1_bottomframe)
         toolbar.update()
         self.canvas.get_tk_widget().pack(fill=BOTH)
         self.canvas.show()
@@ -153,6 +164,13 @@ class Application(threading.Thread):
 
     def run(self):
         print 'Gui thread started'
+
+    def file_save(self):
+        file = tkFileDialog.asksaveasfilename()
+        with open(file, 'wb') as f:
+            pickle.dump(self.final, f)
+
+
 
     def clearGraph(self):
         self.Zvalues = []
