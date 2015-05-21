@@ -2,6 +2,7 @@
 
 
 from Tkinter import *
+from ttk import *
 import matplotlib
 
 matplotlib.use('TkAgg')
@@ -25,7 +26,32 @@ class Application(threading.Thread):
         threading.Thread.__init__(self)
         self.z_Pos = []
 
+
+
+
         self.root.wm_title('Apllication')
+
+
+        # Create Tabs on main screen
+        # tab1 = Data Setup: In this tab it is possible to collect image data for \
+        # new physical setup of the system.
+        # tab2 = Data Preperation: In this tab it is possible to prepare the avaliable image \
+        # data for image visualization.(Linear Interpolation etc.)
+        # tab3 = Object Visualization: In this tab it is possible to visualize current Object under inspection
+
+        note =  Notebook(self.root)
+        tab1 = Frame(note)
+        tab2 = Frame(note)
+        tab3 = Frame(note)
+        tab4 = Frame(note)
+
+        note.add(tab1, text='Data Setup')
+        note.add(tab2, text='Data Preparation')
+        note.add(tab3, text='Object Visualization')
+        note.add(tab4, text='Measurement')
+
+        note.pack()
+
         # Create two frames
         self.topframe = Frame(self.root)
         self.topframe.pack()
