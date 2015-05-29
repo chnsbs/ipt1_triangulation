@@ -27,9 +27,6 @@ class Application(threading.Thread):
         threading.Thread.__init__(self)
         self.z_Pos = []
 
-
-
-
         self.root.wm_title('Apllication')
 
 
@@ -70,7 +67,7 @@ class Application(threading.Thread):
 
 
         # Add a text label which explains the functions of the tab
-        #explanation = """In this tab it is possible to collect image data for a new physical setup of the system.
+        # explanation = """In this tab it is possible to collect image data for a new physical setup of the system.
         #                [Capture] Button: Takes a capture of lines using camera. This data will be used for line detection, extracting line positions.
         #                   """
         #message1_tab1 = Message(tab1, justify=LEFT, text=explanation); message1_tab1.pack();
@@ -101,14 +98,42 @@ class Application(threading.Thread):
         label1_tab2 = Label(tab2, text='Before starting Data Preparation a Data Set must be Loaded: ')
         label1_tab2.grid(row=0, column=0, ipadx=20, padx=10, pady=10)
 
-        #self.label2_tab2_var = StringVar()
-        #self.label2_tab2 = Label(tab2, textvariable= self.label2_tab2_var, relief=RAISED )
-        #label1_tab2.grid(row=2, column=0, ipadx=20, padx=10, pady=10)
+        label2_tab2 = Label(tab2, text='Loaded Data Set must be interpolated along z-Axis: ')
+        label2_tab2.grid(row=1, column=0, ipadx=20, padx=10, pady=10)
+
+
+        #self.label3_tab2_Info = StringVar()
+        self.label3_tab2_Info = Label(tab2, text='Waiting for data for interpolation!')
+        self.label3_tab2_Info.grid(row=5, column=1, ipadx=20, padx=10, pady=10)
 
         button1_tab2_Load = Button(tab2, text='Load Setup Data', command=self.file_load)
         button1_tab2_Load.grid(row=0, column=1, ipadx=20, padx=10, pady=10)
 
+        button2_tab2_Interpolate = Button(tab2, text='Interpolate', command=self.interpolateGeneralize)
+        button2_tab2_Interpolate.grid(row=1, column=1, ipadx=20, padx=10, pady=10)
 
+
+        ############################# Configure 'Object Visualization' Tab #####################################
+
+        label1_tab3 = Label(tab3, text='To visualize the Object, a Data Set for the current test must be loaded and interpolated!')
+        label1_tab3.grid(row=0, column=0, ipadx=5, padx=5, pady=5)
+        label2_tab3 = Label(tab3, text='If everything is ok, Press the Visualize Button')
+        label2_tab3.grid(row=1, column=0, ipadx=5, padx=5, pady=5)
+
+        #button1_tab3_Capture = Button(tab3, text='Capture', command=self.capture)
+        #button1_tab3_Capture.grid(row=2, column=0, ipadx=5, padx=5, pady=5)
+
+        button2_tab3_Visualize = Button(tab3, text='Visualize', command=self.Visualize2)
+        button2_tab3_Visualize.grid(row=2, column=0, ipadx=5, padx=5, pady=5)
+
+
+
+        ############################# Configure 'Measurement' Tab #####################################
+        label1_tab4 = Label(tab4, text='Maximum Values of each Line: ')
+        label1_tab4.grid(row=0, column=0, ipadx=5, padx=5, pady=5)
+
+        button1_tab4_getMax = Button(tab4, text='Measure', command=self.measurement)
+        button1_tab4_getMax.grid(row=0, column=1, ipadx=5, padx=5, pady=5)
 
 
 
@@ -192,6 +217,9 @@ class Application(threading.Thread):
         with open(file, 'rb') as f:
             self.final = pickle.load(f)
             print 'Data Loaded!'
+            self.label3_tab2_Info.configure(text='Data Loaded!\nReady to Interpolate!')
+
+
 
 
     def clearGraph(self):
@@ -365,6 +393,7 @@ class Application(threading.Thread):
 
     def interpolateGeneralize(self):
         t = time.time()
+        self.label3_tab2_Info.configure(text='Interpolation has started!')
         # This function interpolates a point in z value
 
         # Initialization
@@ -439,6 +468,7 @@ class Application(threading.Thread):
         elapsed = time.time() - t
         print 'Elapsed Time for interpolateGeneralize: ' + str(elapsed)
         print 'Succesfully interpolated!'
+        self.label3_tab2_Info.configure(text='Successfully Interpolated!')
 
 
     def _linearRegresion(self):
@@ -553,6 +583,39 @@ class Application(threading.Thread):
         plt.show()
 
         print '3D Plot'
+
+
+    def measurement(self):
+        z = {}
+
+        for lineIndex in self.final[3]:
+            z[lineIndex] = {}
+            for yAxisValue in self.final[3][lineIndex][0]:
+                if (lineIndex in self.LinRegressDict) and (yAxisValue in self.LinRegressDict[lineIndex]):
+                    if not(self.LinRegressDict[lineIndex][yAxisValue] is None):
+                        xVal = self.final[3][lineIndex][0][yAxisValue]
+                        # Calculation of Z-Value
+                        # Using linear regression tool, slope and intercept values \
+                        # were calculated
+                        # Z = slope * x + intercept
+                        slope = self.LinRegressDict[lineIndex][yAxisValue][0]
+                        intercept = self.LinRegressDict[lineIndex][yAxisValue][1]
+
+                        z[lineIndex][yAxisValue] = slope*xVal + intercept
+
+        maxZ = {}
+        for lineIndex in z:
+            if len(z[lineIndex]) > 0:
+                maxxx = max(z[lineIndex].values())
+                print lineIndex, '.th Line', maxxx
+                maxZ[lineIndex] = maxxx
+
+
+
+
+
+
+
 
 
 if __name__ == "__main__":
