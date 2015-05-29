@@ -60,27 +60,29 @@ class Application(threading.Thread):
         ############################# Configure 'Data Setup' Tab #####################################
         # Create two frames for the tab
         self.tab1_topframe = Frame(tab1)
-        self.tab1_topframe.pack()
+        self.tab1_topframe.grid(row=0)
         self.tab1_bottomframe = Frame(tab1)
-        self.tab1_bottomframe.pack(side=BOTTOM)
-        self.tab1_bottomframe2 = Frame(self.root)
-        self.tab1_bottomframe2.pack(side=BOTTOM)
+        self.tab1_bottomframe.grid(row=1)
+        self.initGraph()
+
+        self.tab1_bottomframe2 = Frame(tab1)
+        self.tab1_bottomframe2.grid(row=2)
+
 
         # Add a text label which explains the functions of the tab
         #explanation = """In this tab it is possible to collect image data for a new physical setup of the system.
         #                [Capture] Button: Takes a capture of lines using camera. This data will be used for line detection, extracting line positions.
         #                   """
-
         #message1_tab1 = Message(tab1, justify=LEFT, text=explanation); message1_tab1.pack();
 
         # Button for taking capture from the camere to process
         self.button_Capture = Button(self.tab1_topframe, text='Capture', command=self.capture)
 
         # Button for taking Z Value
-        self.button_SAVE = Button(self.tab1_topframe, text='Add', command=self.saveZPos)
+        self.button_SAVE = Button(self.tab1_topframe, text='Add to Data Set', command=self.saveZPos)
         self.entry_Zpos = Entry(self.tab1_topframe)
         self.label_Zpos = Label(self.tab1_topframe, text='Enter the position in Z-Axis')
-        tab1_label_Save = Label(self.tab1_bottomframe2, text='If gathered data is ready for futher processes')
+
         tab1_button_Save = Button(self.tab1_bottomframe2, text='Save Setup Data', command=self.file_save)
 
         # Pack the widgets to make them visible to user
@@ -91,6 +93,21 @@ class Application(threading.Thread):
         tab1_button_Save.grid(row=1, column=2, ipadx=20, padx=10, pady=10)
 
         ############################# Configure 'Data Preparation' Tab #####################################
+
+        #panedwindow_tab2 = PanedWindow(tab2, orient=VERTICAL)
+        #paned1_tab2 = LabelFrame(panedwindow_tab2, text='Loading Image Data Set', width=100, height=100)
+        #panedwindow_tab2.grid(row=4, column=3)
+
+        label1_tab2 = Label(tab2, text='Before starting Data Preparation a Data Set must be Loaded: ')
+        label1_tab2.grid(row=0, column=0, ipadx=20, padx=10, pady=10)
+
+        #self.label2_tab2_var = StringVar()
+        #self.label2_tab2 = Label(tab2, textvariable= self.label2_tab2_var, relief=RAISED )
+        #label1_tab2.grid(row=2, column=0, ipadx=20, padx=10, pady=10)
+
+        button1_tab2_Load = Button(tab2, text='Load Setup Data', command=self.file_load)
+        button1_tab2_Load.grid(row=0, column=1, ipadx=20, padx=10, pady=10)
+
 
 
 
@@ -126,7 +143,7 @@ class Application(threading.Thread):
         '''
 
 
-        self.initGraph()
+
         self.Zvalues = []
 
         # self.final[0] --> Z values
@@ -170,6 +187,11 @@ class Application(threading.Thread):
         with open(file, 'wb') as f:
             pickle.dump(self.final, f)
 
+    def file_load(self):
+        file = tkFileDialog.askopenfilename()
+        with open(file, 'rb') as f:
+            self.final = pickle.load(f)
+            print 'Data Loaded!'
 
 
     def clearGraph(self):
