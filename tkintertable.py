@@ -457,10 +457,10 @@ class Application(threading.Thread):
                         #else:
                         #    pass
 
-                    if len(Xval) >= 2:
+                    if len(Xval) >= 3:
                         self.LinRegressDict[lineIndex][yAxisValue] = stats.linregress(Xval, Zval)
 
-                    elif len(Xval) < 2:
+                    else:
                         self.LinRegressDict[lineIndex][yAxisValue] = None
 
 
