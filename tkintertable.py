@@ -123,7 +123,7 @@ class Application(threading.Thread):
         #button1_tab3_Capture = Button(tab3, text='Capture', command=self.capture)
         #button1_tab3_Capture.grid(row=2, column=0, ipadx=5, padx=5, pady=5)
 
-        button2_tab3_Visualize = Button(tab3, text='Visualize', command=self.Visualize2)
+        button2_tab3_Visualize = Button(tab3, text='Visualize', command=self.VisualizeSimplified)
         button2_tab3_Visualize.grid(row=2, column=0, ipadx=5, padx=5, pady=5)
 
 
@@ -131,10 +131,13 @@ class Application(threading.Thread):
         ############################# Configure 'Measurement' Tab #####################################
         label1_tab4 = Label(tab4, text='Maximum Values of each Line: ')
         label1_tab4.grid(row=0, column=0, ipadx=5, padx=5, pady=5)
-
         button1_tab4_getMax = Button(tab4, text='Measure', command=self.measurement)
         button1_tab4_getMax.grid(row=0, column=1, ipadx=5, padx=5, pady=5)
 
+        label2_tab4 = Label(tab4, text='Save 3D Point Cloud as a file: ')
+        label2_tab4.grid(row=1, column=0, ipadx=5, padx=5, pady=5)
+        button2_tab4_CreateDataCloud= Button(tab4, text='Save 3D Point Cloud ', command=self._Create_3D_Point_Cloud_CSV)
+        button2_tab4_CreateDataCloud.grid(row=1, column=1, ipadx=5, padx=5, pady=5)
 
 
         '''
@@ -298,30 +301,6 @@ class Application(threading.Thread):
         elif (self.linedetection.getLine() != False):
             self.capture3D()
 
-
-
-
-
-
-    def _Csv_Point_Cloud(self, filename, data):
-        print "Entered to function: _Csv_Point_Cloud() in Application"
-
-        t = time.time()
-
-        with open(filename, 'wt') as f:
-            try:
-                writer = csv.writer(f)
-                for i in self.final[0]:
-                    writer.writerow(zvalue)
-                    for line in self.final[1]:
-                        writer.writerow(line)
-            finally:
-                f.close()
-
-        elapsed = time.time() - t
-        print 'Elapsed Time for createCSV in Application: ' + str(elapsed)
-
-        pass
 
     def donothing(self):
         pass
@@ -504,15 +483,16 @@ class Application(threading.Thread):
         self.final = pickle.load(open("dataset.p", "rb"))
         print 'Data Loaded!'
 
-    def Visualize(self):
+    def _Create_Point_Cloud_Data(self):
 
-        self.capture3D()
+        # self.capture3D()
 
-        x = []
-        y = []
-        z = []
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
+        t = time.time()
+        self.x = []
+        self.y = []
+        self.z = []
+        # fig = plt.figure()
+        # ax = fig.add_subplot(111, projection='3d')
 
 
         for lineIndex in self.final[3]:
@@ -521,8 +501,8 @@ class Application(threading.Thread):
                 if lineIndex in self.LinRegressDict:
                     if not(self.LinRegressDict[lineIndex][yAxisValue] is None):
                         xVal = self.final[3][lineIndex][0][yAxisValue]
-                        x.append(xVal)
-                        y.append(yAxisValue)
+                        self.x.append(xVal)
+                        self.y.append(yAxisValue)
 
                         # Calculation of Z-Value
                         # Using linear regression tool, slope and intercept values \
@@ -530,19 +510,26 @@ class Application(threading.Thread):
                         # Z = slope * x + intercept
                         slope = self.LinRegressDict[lineIndex][yAxisValue][0]
                         intercept = self.LinRegressDict[lineIndex][yAxisValue][1]
-                        z.append(slope*xVal + intercept)
+                        self.z.append(slope*xVal + intercept)
 
                     else:
                         pass
                 else:
                     pass
 
-        #X, Y, Z = np.meshgrid(x, y, z)
-        #ax.plot_wireframe(X, Y, Z, rstride=3, cstride=3)
-        ax.scatter(x, y, z)
-        plt.show()
+        elapsed = time.time() - t
+        print 'Elapsed Time for createCSV in Application: ' + str(elapsed)
 
-    def Visualize2(self):
+        # Check if x,y and z has the same length
+
+        self._3D_point_Cloud = zip(self.x, self.y, self.z)
+
+
+
+        print 'Point Cloud Created'
+
+
+    def VisualizeSimplified(self):
 
         self.capture3D()
 
@@ -613,8 +600,27 @@ class Application(threading.Thread):
 
 
 
+    def _Create_3D_Point_Cloud_CSV(self):
+
+        filename = tkFileDialog.asksaveasfilename()
 
 
+        f = open(filename, 'wt')
+
+        self._Create_Point_Cloud_Data()
+        temp = 0
+        try:
+            writer = csv.writer(f)
+            writer.writerow( ('x', 'y', 'z') )
+            for item in self._3D_point_Cloud:
+                temp += 1
+                # writer.writerow( (i+1, chr(ord('a') + i), '08/%02d/07' % (i+1)) )
+                writer.writerow( (item[0], item[1] ,item[2]) )
+        finally:
+            f.close()
+
+        print 'Point Cloud Saved!'
+        print temp ,' seperate points'
 
 
 
